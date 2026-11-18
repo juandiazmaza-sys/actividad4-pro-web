@@ -13,6 +13,7 @@ try {
 
 const app = express();
 const PORT = 3000;
+app.set("json spaces", 2);
 
 app.use(express.json());
 
@@ -107,6 +108,16 @@ app.patch("/productos/:id", async (req, res) => {
   try {
     const { nombre, precio, stock } = req.body;
 
+    if (
+      nombre === undefined &&
+      precio === undefined &&
+      stock === undefined
+    ) {
+      return res.status(400).json({
+        error: "Debe enviar al menos un campo para actualizar"
+      });
+    }
+
     const [resultado] = await db.query(
       "UPDATE productos SET nombre = ?, precio = ?, stock = ? WHERE id = ?",
       [nombre, precio, stock, req.params.id]
@@ -121,6 +132,7 @@ app.patch("/productos/:id", async (req, res) => {
     res.json({
       mensaje: "Producto actualizado"
     });
+
   } catch (error) {
     res.status(500).json({
       error: "Error en la base de datos"
@@ -141,10 +153,8 @@ app.delete("/productos/:id", async (req, res) => {
         error: "Producto no encontrado"
       });
     }
-
-    res.json({
-      mensaje: "Producto eliminado"
-    });
+    
+    res.status(204).json();
   } catch (error) {
     res.status(500).json({
       error: "Error en la base de datos"
